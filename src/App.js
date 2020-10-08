@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { initDB, useIndexedDB, AccessDB } from 'react-indexed-db';
+import React, { useState} from 'react';
+import { initDB, useIndexedDB } from 'react-indexed-db';
 import { DBConfig } from './Data/DBConfig';
 
-import logo from './logo.svg';
 import './App.css';
 import Button from '@material-ui/core/Button';
 import Input from '@material-ui/core/Input';
@@ -17,7 +16,7 @@ initDB(DBConfig);
 function App() {
   let testRss = "https://www.svt.se/nyheter/lokalt/blekinge/rss.xml";
   const [newFeed, setNewFeed] = useState("");
-  const [feeds, setFeeds] = useState([]);
+  // const [feeds, setFeeds] = useState([]);
   const [feedItems, setFeedItems] = useState([]);
 
   let Parser = require('rss-parser');
@@ -25,8 +24,8 @@ function App() {
   const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"
 
   const { add } = useIndexedDB('Rss');
-  const { getAll } = useIndexedDB('Rss');
-  const db = useIndexedDB('Rss');
+  // const { getAll } = useIndexedDB('Rss');
+  // const db = useIndexedDB('Rss');
 
   function addToDb(url) {
     add({ url: url }).then(
