@@ -1,15 +1,28 @@
- 
+
 export const DBConfig = {
-    name: 'RssFeed',
-    version: 2,
-    objectStoresMeta: [
-      {
-        store: 'Rss',
-        storeConfig: { keyPath: 'id', autoIncrement: true },
-        storeSchema: [
-          { name: 'url', keypath: 'url', options: { unique: false } },
-          // { name: 'email', keypath: 'email', options: { unique: false } }
-        ]
-      }
-    ]
-  };
+  name: 'RssFeed',
+  version: 3,
+  objectStoresMeta: [
+    {
+      store: 'Rss',
+      storeConfig: { keyPath: 'id', autoIncrement: true },
+      storeSchema: [
+        { name: 'url', keypath: 'url', options: { unique: true } },
+        { name: 'feedDesc', keypath: 'feedDesc', options: { unique: false } }
+      ]
+    },
+    {
+      store: 'Item',
+      storeConfig: { keyPath: 'id', autoIncrement: true },
+      storeSchema: [ 
+        {name: 'RssId', keyPath: 'RssId', options: {unique: true  }},
+        {name: 'title', keyPath: 'title', options: {unique: false  }},
+        {name: 'isoDate', keyPath: 'isoDate', options: {unique: false  }},
+        {name: 'guid', keyPath: 'guid', options: {unique: false  }},
+        {name: 'contentSnippet', keyPath: 'contentSnippet', options: {unique: false  }},
+        {name: 'link', keyPath: 'link', options: {unique: false  }},
+      ]
+
+    }
+  ]
+};
