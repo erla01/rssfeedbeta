@@ -10,7 +10,7 @@ initDB(DBConfig);
 function App() {
   const [newFeed, setNewFeed] = useState("");
   const [displayItems, setDisplayItems] = useState([])
-    const [feedItems, setFeedItems] = useState([]);
+  const [feedItems, setFeedItems] = useState([]);
   const [unreadFeedItems, setUnreadFeedItems] = useState([]);
 
   let Parser = require('rss-parser');
@@ -19,8 +19,8 @@ function App() {
 
   const { add, getAll, update } = useIndexedDB('Rss');
   const { add: addRssItem, getAll: getAllRssItem } = useIndexedDB('Item');
-    const addNewFeed = () => addFeedDb(newFeed);
-  
+  const addNewFeed = () => addFeedDb(newFeed);
+
   const addFeedDb = (async (url) => {
 
     let completeFeed = await getFeed(url);
@@ -38,7 +38,7 @@ function App() {
       }
     );
   });
-  
+
 
   const addItem = (item, RssId) => {
 
@@ -78,7 +78,7 @@ function App() {
       feedsFromDB.forEach(oldFeed => {
         getFeed(oldFeed.url).then(updatedFeed => {
           let oldDate = new Date(oldFeed.lastBuildDate);
-          
+
           let newItems = updatedFeed.items
             .filter(feedItem => oldDate < new Date(feedItem.isoDate))
             .map(feedItem => {
@@ -95,18 +95,18 @@ function App() {
   });
 
   const handleChange = (e) => {
-    if(e.target.value === "new") {
-    setDisplayItems(unreadFeedItems);
+    if (e.target.value === "new") {
+      setDisplayItems(unreadFeedItems);
     } else {
       setDisplayItems(feedItems);
     }
   }
- 
+
 
   return (
     <>
-    <FeedForm addNewFeed={addNewFeed} refreshFeed={refreshFeed} handleChange={handleChange} setNewFeed={setNewFeed} />
-    <FeedItemList displayItems={displayItems}/>
+      <FeedForm addNewFeed={addNewFeed} refreshFeed={refreshFeed} handleChange={handleChange} setNewFeed={setNewFeed} />
+      <FeedItemList displayItems={displayItems} />
     </>
   );
 }
