@@ -1,27 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { initDB, useIndexedDB } from 'react-indexed-db';
 import { DBConfig } from './Data/DBConfig';
-
 import './App.css';
-import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import Link from '@material-ui/core/Link';
-
-import Grid from '@material-ui/core/Grid';
-import { Container, TextField, FormControl, RadioGroup, FormControlLabel, Radio } from '@material-ui/core';
-
-
+import FeedItemList from './FeedItemList';
+import FeedForm from './FeedForm';
 
 initDB(DBConfig);
 
 function App() {
   const [newFeed, setNewFeed] = useState("");
   const [displayItems, setDisplayItems] = useState([])
-  // const [feeds, setFeeds] = useState([]);
-  const [feedItems, setFeedItems] = useState([]);
+    const [feedItems, setFeedItems] = useState([]);
   const [unreadFeedItems, setUnreadFeedItems] = useState([]);
 
   let Parser = require('rss-parser');
@@ -30,8 +19,8 @@ function App() {
 
   const { add, getAll, update } = useIndexedDB('Rss');
   const { add: addRssItem, getAll: getAllRssItem } = useIndexedDB('Item');
-  // const db = useIndexedDB('Rss');
-
+    const addNewFeed = () => addFeedDb(newFeed);
+  
   const addFeedDb = (async (url) => {
 
     let completeFeed = await getFeed(url);
@@ -49,6 +38,7 @@ function App() {
       }
     );
   });
+  
 
   const addItem = (item, RssId) => {
 
@@ -88,8 +78,7 @@ function App() {
       feedsFromDB.forEach(oldFeed => {
         getFeed(oldFeed.url).then(updatedFeed => {
           let oldDate = new Date(oldFeed.lastBuildDate);
-          //let oldDate = new Date('Thu, 08 Oct 2020 17:53:02 +0000');
-
+          
           let newItems = updatedFeed.items
             .filter(feedItem => oldDate < new Date(feedItem.isoDate))
             .map(feedItem => {
@@ -112,61 +101,12 @@ function App() {
       setDisplayItems(feedItems);
     }
   }
-
-
+ 
 
   return (
     <>
-      <Container className="form-container" maxWidth="sm">
-        <form className="rss-form" noValidate autoComplete="off">
-          <Grid container spacing={2}>
-            <Grid item id="rssGridItem">
-              <TextField id="standard-full-width"
-                style={{ margin: 8 }}
-                fullWidth
-                margin="normal"
-                placeholder="RSSFeed" onChange={(e) => setNewFeed(e.target.value)} inputProps={{ 'aria-label': 'description' }} />
-            </Grid>
-            <Grid item>
-              <Button variant="contained" color="primary" onClick={() => addFeedDb(newFeed)}>
-                Lägg till
-            </Button>
-            </Grid>
-            <Grid item><Button variant="contained" color="primary" onClick={() => refreshFeed()}>
-              Uppdatera
-            </Button></Grid>
-
-            <FormControl component="fieldset">
-              <RadioGroup row defaultValue="all" aria-label="feeds" name="customized-radios">
-                <FormControlLabel value="all" control={<Radio color="primary" onChange={handleChange} />} label="All" />
-                <FormControlLabel value="new" control={<Radio color="primary" onChange={handleChange} />} label="New" />
-              </RadioGroup>
-            </FormControl>
-
-
-          </Grid>
-        </form>
-      </Container>
-
-      <List>{displayItems.map(item =>
-        <ListItem key={item.guid} alignItems="flex-start">
-          <ListItemText
-            primary={<Link href={item.link}>{item.title}</Link>}
-            secondary={
-              <>
-                <Typography
-                  component="span"
-                  variant="body2"
-                  color="textPrimary"
-                >
-
-                </Typography>
-                <span>{item.contentSnippet}</span>
-              </>
-            }
-          />
-        </ListItem>)}
-      </List>
+    <FeedForm addNewFeed={addNewFeed} refreshFeed={refreshFeed} handleChange={handleChange} setNewFeed={setNewFeed} />
+    <FeedItemList displayItems={displayItems}/>
     </>
   );
 }
