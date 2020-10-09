@@ -8,7 +8,8 @@ export const DBConfig = {
       storeConfig: { keyPath: 'id', autoIncrement: true },
       storeSchema: [
         { name: 'url', keypath: 'url', options: { unique: true } },
-        { name: 'feedDesc', keypath: 'feedDesc', options: { unique: false } }
+        { name: 'feedDesc', keypath: 'feedDesc', options: { unique: false } },
+        { name: 'lastBuildDate', keypath: 'lastBuildDate', options: {unique: false} }
       ]
     },
     {

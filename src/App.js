@@ -11,21 +11,24 @@ import Typography from '@material-ui/core/Typography';
 import Link from '@material-ui/core/Link';
 
 import Grid from '@material-ui/core/Grid';
-import { Container, TextField } from '@material-ui/core';
+import { Container, TextField, FormControl, RadioGroup, FormControlLabel, Radio } from '@material-ui/core';
+
 
 
 initDB(DBConfig);
 
 function App() {
   const [newFeed, setNewFeed] = useState("");
+  const [displayItems, setDisplayItems] = useState([])
   // const [feeds, setFeeds] = useState([]);
   const [feedItems, setFeedItems] = useState([]);
+  const [unreadFeedItems, setUnreadFeedItems] = useState([]);
 
   let Parser = require('rss-parser');
   let parser = new Parser();
   const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"
 
-  const { add } = useIndexedDB('Rss');
+  const { add, getAll, update } = useIndexedDB('Rss');
   const { add: addRssItem, getAll: getAllRssItem } = useIndexedDB('Item');
   // const db = useIndexedDB('Rss');
 
@@ -33,10 +36,13 @@ function App() {
 
     let completeFeed = await getFeed(url);
 
-    add({ url: url, feedDesc: completeFeed.description }).then(
+    add({ url: url, feedDesc: completeFeed.description, lastBuildDate: completeFeed.lastBuildDate }).then(
       event => {
         console.log('ID Generated: ', event)
         completeFeed.items.map(item => addItem(item, event))
+        setDisplayItems(displayItems.concat(completeFeed.items));
+        setFeedItems(feedItems.concat(completeFeed.items));
+        setUnreadFeedItems(unreadFeedItems.concat(completeFeed.items));
       },
       error => {
         console.log(error);
@@ -48,7 +54,7 @@ function App() {
 
     addRssItem({ RssId: RssId, title: item.title, guid: item.guid, isoDate: item.isoDate, link: item.link, contentSnippet: item.contentSnippet }).then(
       event => {
-        console.log('Item ID Generated: ', event)
+        console.log('Item ID Generated: ', event);
       },
       error => {
         console.log(error);
@@ -60,8 +66,10 @@ function App() {
   const getFeedItems = () => {
     getAllRssItem().then(feedItemsFromDB => {
       setFeedItems(feedItemsFromDB);
+      setDisplayItems(feedItemsFromDB);
     });
   }
+
 
   useEffect(
     getFeedItems, []);
@@ -74,6 +82,37 @@ function App() {
     return feed;
 
   });
+
+  const refreshFeed = (async () => {
+    getAll().then(feedsFromDB => {
+      feedsFromDB.forEach(oldFeed => {
+        getFeed(oldFeed.url).then(updatedFeed => {
+          let oldDate = new Date(oldFeed.lastBuildDate);
+          //let oldDate = new Date('Thu, 08 Oct 2020 17:53:02 +0000');
+
+          let newItems = updatedFeed.items
+            .filter(feedItem => oldDate < new Date(feedItem.isoDate))
+            .map(feedItem => {
+              addItem(feedItem);
+              console.log(feedItem);
+              return feedItem;
+            });
+          setUnreadFeedItems(unreadFeedItems.concat(newItems));
+          oldFeed.lastBuildDate = updatedFeed.lastBuildDate;
+          update(oldFeed);
+        });
+      });
+    });
+  });
+
+  const handleChange = (e) => {
+    if(e.target.value === "new") {
+    setDisplayItems(unreadFeedItems);
+    } else {
+      setDisplayItems(feedItems);
+    }
+  }
+
 
 
   return (
@@ -93,11 +132,23 @@ function App() {
                 Lägg till
             </Button>
             </Grid>
+            <Grid item><Button variant="contained" color="primary" onClick={() => refreshFeed()}>
+              Uppdatera
+            </Button></Grid>
+
+            <FormControl component="fieldset">
+              <RadioGroup row defaultValue="all" aria-label="feeds" name="customized-radios">
+                <FormControlLabel value="all" control={<Radio color="primary" onChange={handleChange} />} label="All" />
+                <FormControlLabel value="new" control={<Radio color="primary" onChange={handleChange} />} label="New" />
+              </RadioGroup>
+            </FormControl>
+
+
           </Grid>
         </form>
       </Container>
 
-      <List>{feedItems.map(item =>
+      <List>{displayItems.map(item =>
         <ListItem key={item.guid} alignItems="flex-start">
           <ListItemText
             primary={<Link href={item.link}>{item.title}</Link>}
@@ -119,6 +170,5 @@ function App() {
     </>
   );
 }
-
 
 export default App;
